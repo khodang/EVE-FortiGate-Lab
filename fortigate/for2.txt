@@ -1,0 +1,201 @@
+config system global
+    set hostname FortiGate2
+end
+config system interface
+    edit "port1"
+        set mode static
+        set ip 192.168.26.133 255.255.255.0
+        set allowaccess ping http ssh https
+        set role wan
+    next
+end
+
+config system interface
+
+    edit "VLAN70"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 70
+        set ip 10.2.70.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN80"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 80
+        set ip 10.2.80.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+end
+
+config system dhcp server
+
+    edit 70
+        set interface "VLAN70"
+        set default-gateway 10.2.70.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.2.70.100
+                set end-ip 10.2.70.200
+            next
+        end
+    next
+
+    edit 80
+        set interface "VLAN80"
+        set default-gateway 10.2.80.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.2.80.100
+                set end-ip 10.2.80.200
+            next
+        end
+    next
+end
+
+config system dns
+    set primary 8.8.8.8
+    set secondary 8.8.4.4
+end
+
+config firewall address
+
+    edit "VLAN70_NET"
+        set subnet 10.2.70.0 255.255.255.0
+    next
+
+    edit "VLAN80_NET"
+        set subnet 10.2.80.0 255.255.255.0
+    next
+end
+
+config firewall addrgrp
+    edit "USER_VLANS"
+        set member "VLAN70_NET" "VLAN80_NET" 
+    next
+end
+
+config firewall policy
+    edit 1
+        set name "USER-VLAN-to-INTERNET"
+        set srcintf "VLAN70" "VLAN80" 
+        set dstintf "port1"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config firewall policy
+    edit 2
+        set name "USER-VLAN-to-USER-VLAN"
+        set srcintf "VLAN70" "VLAN80"
+        set dstintf "VLAN70" "VLAN80"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config vpn ipsec phase1-interface
+    edit "VPN-TO-SITE1"
+        set interface "port2"
+        set ike-version 1
+        set peertype any
+        set remote-gw 100.1.1.2
+        set psksecret "12345678"
+        set proposal des-sha256
+        set dhgrp 14 5
+        set keylife 86400
+        set dpd on-idle
+    next
+end
+
+config vpn ipsec phase2-interface
+    edit "VPN-TO-SITE1"
+        set phase1name "VPN-TO-SITE1"
+        set proposal des-sha256
+        set pfs enable
+        set dhgrp 14
+        set src-subnet 10.2.0.0 255.255.0.0
+        set dst-subnet 10.1.0.0 255.255.0.0
+    next
+end
+
+config router static
+    edit 0
+        set dst 10.1.0.0 255.255.0.0
+        set device "VPN-TO-SITE1"
+    next
+end
+
+config firewall policy
+    edit 3
+        set name "SITE2-LAN-to-SITE1-VPN"
+        set srcintf "VLAN70" "VLAN80"
+        set dstintf "VPN-TO-SITE1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat disable
+    next
+end
+
+config firewall policy
+    edit 4
+        set name "SITE1-VPN-to-SITE2-LAN"
+        set srcintf "VPN-TO-SITE1"
+        set dstintf "VLAN70" "VLAN80"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat disable
+    next
+end
+
+
+config firewall policy
+    edit 5
+        set name "INTERNET-to-USER-VLAN"
+        set srcintf "port1" 
+        set dstintf "VLAN70" "VLAN80"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config router static
+    edit 1
+        set dst 0.0.0.0 0.0.0.0
+        set gateway 200.1.1.1
+        set device "port2"
+    next
+end
+config router static
+    edit 2
+        set dst 0.0.0.0 0.0.0.0
+        set gateway 192.168.26.2
+        set device "port1"
+    next
+end

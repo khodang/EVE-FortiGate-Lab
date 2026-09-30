@@ -1,0 +1,36 @@
+enable
+configure terminal
+
+hostname SW-IT
+
+vlan 30
+ name IT
+exit
+
+interface Ethernet0/0
+ description UPLINK_TO_SW-CO-SO-1
+ switchport mode trunk
+ switchport trunk allowed vlan 1,30
+ no shutdown
+exit
+
+interface Ethernet0/1
+ description PC-IT-1
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+interface Ethernet0/2
+ description PC-IT-2
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+end
+write memory

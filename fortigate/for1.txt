@@ -1,0 +1,311 @@
+config system global
+    set hostname FortiGate1
+end
+config system interface
+    edit "port1"
+        set mode static
+        set ip 192.168.26.131 255.255.255.0
+        set allowaccess ping http ssh 
+        set role wan
+    next
+end
+
+config system interface
+
+    edit "VLAN10"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 10
+        set ip 10.1.10.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN20"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 20
+        set ip 10.1.20.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN30"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 30
+        set ip 10.1.30.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN40"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 40
+        set ip 10.1.40.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN50"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 50
+        set ip 10.1.50.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+    edit "VLAN60"
+        set vdom "root"
+        set type vlan
+        set interface "port3"
+        set vlanid 60
+        set ip 10.1.60.1 255.255.255.0
+        set allowaccess ping https ssh
+    next
+
+end
+
+config system dhcp server
+
+    edit 10
+        set interface "VLAN10"
+        set default-gateway 10.1.10.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.10.100
+                set end-ip 10.1.10.200
+            next
+        end
+    next
+
+    edit 20
+        set interface "VLAN20"
+        set default-gateway 10.1.20.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.20.100
+                set end-ip 10.1.20.200
+            next
+        end
+    next
+
+    edit 30
+        set interface "VLAN30"
+        set default-gateway 10.1.30.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.30.100
+                set end-ip 10.1.30.200
+            next
+        end
+    next
+
+    edit 40
+        set interface "VLAN40"
+        set default-gateway 10.1.40.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.40.100
+                set end-ip 10.1.40.200
+            next
+        end
+    next
+
+    edit 50
+        set interface "VLAN50"
+        set default-gateway 10.1.50.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.50.100
+                set end-ip 10.1.50.200
+            next
+        end
+    next
+
+    edit 60
+        set interface "VLAN60"
+        set default-gateway 10.1.60.1
+        set netmask 255.255.255.0
+        set dns-service default
+        config ip-range
+            edit 1
+                set start-ip 10.1.60.100
+                set end-ip 10.1.60.200
+            next
+        end
+    next
+
+end
+
+config system dns
+    set primary 8.8.8.8
+    set secondary 8.8.4.4
+end
+
+config firewall address
+
+    edit "VLAN10_NET"
+        set subnet 10.1.10.0 255.255.255.0
+    next
+
+    edit "VLAN20_NET"
+        set subnet 10.1.20.0 255.255.255.0
+    next
+
+    edit "VLAN30_NET"
+        set subnet 10.1.30.0 255.255.255.0
+    next
+
+    edit "VLAN40_NET"
+        set subnet 10.1.40.0 255.255.255.0
+    next
+
+    edit "VLAN50_NET"
+        set subnet 10.1.50.0 255.255.255.0
+    next
+
+    edit "VLAN60_NET"
+        set subnet 10.1.60.0 255.255.255.0
+    next
+
+    edit "SERVER_10.1.60.10"
+        set subnet 10.1.60.10 255.255.255.255
+    next
+
+end
+
+config firewall addrgrp
+    edit "USER_VLANS"
+        set member "VLAN10_NET" "VLAN20_NET" "VLAN30_NET" "VLAN40_NET" "VLAN50_NET" "VLAN60_NET"
+    next
+end
+
+config firewall policy
+    edit 1
+        set name "USER-VLAN-to-INTERNET"
+        set srcintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set dstintf "port1"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config firewall policy
+    edit 2
+        set name "USER-VLAN-to-USER-VLAN"
+        set srcintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set dstintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config vpn ipsec phase1-interface
+    edit "VPN-TO-SITE2"
+        set interface "port2"
+        set ike-version 1
+        set peertype any
+        set remote-gw 192.168.26.132
+        set psksecret "12345678"
+        set proposal des-sha256
+        set dhgrp 14 5
+        set keylife 86400
+        set dpd on-idle
+    next
+end
+
+config vpn ipsec phase2-interface
+    edit "VPN-TO-SITE2"
+        set phase1name "VPN-TO-SITE2"
+        set proposal des-sha256
+        set pfs enable
+        set dhgrp 14
+        set src-subnet 10.1.0.0 255.255.0.0
+        set dst-subnet 10.2.0.0 255.255.0.0
+    next
+end
+
+config router static
+    edit 0
+        set dst 10.2.0.0 255.255.0.0
+        set device "VPN-TO-SITE2"
+    next
+end
+
+config firewall policy
+    edit 3
+        set name "SITE1-LAN-to-SITE2-VPN"
+        set srcintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set dstintf "VPN-TO-SITE2"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat disable
+    next
+end
+
+config firewall policy
+    edit 4
+        set name "SITE2-VPN-to-SITE1-LAN"
+        set srcintf "VPN-TO-SITE2"
+        set dstintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat disable
+    next
+end
+
+config firewall policy
+    edit 5
+        set name "INTERNET-to-USER-VLAN"
+        set srcintf "port1"
+        set dstintf "VLAN10" "VLAN20" "VLAN30" "VLAN40" "VLAN50" "VLAN60"
+        set srcaddr "USER_VLANS"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+config router static
+    edit 1
+        set dst 0.0.0.0 0.0.0.0
+        set gateway 100.1.1.1
+        set device "port2"
+    next
+end
+config router static
+    edit 2
+        set dst 0.0.0.0 0.0.0.0
+        set gateway 192.168.26.2
+        set device "port1"
+    next
+end

@@ -1,0 +1,109 @@
+enable
+configure terminal
+
+hostname SW-CO-SO-1
+
+! =========================
+! TAO CAC VLAN
+! =========================
+vlan 10
+ name KETOAN
+exit
+
+vlan 20
+ name GIAMDOC
+exit
+
+vlan 30
+ name IT
+exit
+
+vlan 40
+ name SALE
+exit
+
+vlan 50
+ name MARKETING
+exit
+
+vlan 60
+ name SERVER
+exit
+
+! =========================
+! DAT CORE1 LAM ROOT STP
+! =========================
+spanning-tree vlan 10,20,30,40,50,60 priority 24576
+
+! =========================
+! Et1/1 -> FORTINET-1 PORT3
+! =========================
+interface Ethernet1/1
+ description TRUNK_TO_FORTINET-1_PORT3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60
+ no shutdown
+exit
+
+! =========================
+! Et0/1 -> SW-KE-TOAN E0/0
+! =========================
+interface Ethernet0/1
+ description TRUNK_TO_SW-KE-TOAN
+ switchport mode trunk
+ switchport trunk allowed vlan 1,10
+ no shutdown
+exit
+
+! =========================
+! Et0/0 -> SW-SERVER E0/0
+! =========================
+interface Ethernet0/0
+ description TRUNK_TO_SW-SERVER
+ switchport mode trunk
+ switchport trunk allowed vlan 1,60
+ no shutdown
+exit
+
+! =========================
+! Et0/2 -> SW-SALE E0/0
+! =========================
+interface Ethernet0/2
+ description TRUNK_TO_SW-SALE
+ switchport mode trunk
+ switchport trunk allowed vlan 1,40
+ no shutdown
+exit
+
+! =========================
+! Et0/3 -> SW-MARKETING E0/0
+! =========================
+interface Ethernet0/3
+ description TRUNK_TO_SW-MARKETING
+ switchport mode trunk
+ switchport trunk allowed vlan 1,50
+ no shutdown
+exit
+
+! =========================
+! Et1/0 -> SW-GIAM-DOC E0/0
+! =========================
+interface Ethernet1/0
+ description TRUNK_TO_SW-GIAM-DOC
+ switchport mode trunk
+ switchport trunk allowed vlan 1,20
+ no shutdown
+exit
+
+! =========================
+! Et1/2 -> SW-IT E0/0
+! =========================
+interface Ethernet1/2
+ description TRUNK_TO_SW-IT
+ switchport mode trunk
+ switchport trunk allowed vlan 1,30
+ no shutdown
+exit
+
+end
+write memory

@@ -1,0 +1,27 @@
+enable
+configure terminal
+
+hostname SW-quanli
+
+vlan 70
+ name QUANLI
+exit
+
+interface Ethernet0/0
+ description UPLINK_TO_SW-CO-SO-2
+ switchport mode trunk
+ switchport trunk allowed vlan 1,70
+ no shutdown
+exit
+
+interface Ethernet0/1
+ description PC-QUANLI
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+end
+write memory

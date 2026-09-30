@@ -1,0 +1,27 @@
+enable
+configure terminal
+
+hostname SW-giam-doc
+
+vlan 20
+ name GIAMDOC
+exit
+
+interface Ethernet0/0
+ description UPLINK_TO_SW-CO-SO-1
+ switchport mode trunk
+ switchport trunk allowed vlan 1,20
+ no shutdown
+exit
+
+interface Ethernet0/1
+ description PC-GIAM-DOC
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+end
+write memory

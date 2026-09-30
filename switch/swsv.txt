@@ -1,0 +1,27 @@
+enable
+configure terminal
+
+hostname SW-server
+
+vlan 60
+ name SERVER
+exit
+
+interface Ethernet0/0
+ description UPLINK_TO_SW-CO-SO-1
+ switchport mode trunk
+ switchport trunk allowed vlan 1,60
+ no shutdown
+exit
+
+interface Ethernet0/2
+ description WINDOWS-SERVER
+ switchport mode access
+ switchport access vlan 60
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+end
+write memory

@@ -1,0 +1,36 @@
+enable
+configure terminal
+
+hostname SW-sale-2
+
+vlan 80
+ name SALE2
+exit
+
+interface Ethernet0/0
+ description UPLINK_TO_SW-CO-SO-2
+ switchport mode trunk
+ switchport trunk allowed vlan 1,80
+ no shutdown
+exit
+
+interface Ethernet0/1
+ description PC-SALE2-1
+ switchport mode access
+ switchport access vlan 80
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+interface Ethernet0/2
+ description PC-SALE2-2
+ switchport mode access
+ switchport access vlan 80
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+exit
+
+end
+write memory
